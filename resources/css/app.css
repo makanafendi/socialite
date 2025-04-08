@@ -70,10 +70,53 @@
         background-color: #42A3FF;
     }
     .text-primary {
-        background-color: #42A3FF;
+        color: #42A3FF;
+    }
+    
+    /* Add these new utility classes */
+    .hover-transform {
+        @apply transition-transform duration-300 hover:scale-105;
+    }
+    
+    .card-hover {
+        @apply transition-all duration-300 hover:shadow-md hover:border-gray-300;
+    }
+}
+
+@layer components {
+    .profile-stat {
+        @apply flex flex-col items-center;
+    }
+    
+    .profile-stat-number {
+        @apply text-xl font-bold text-gray-900;
+    }
+    
+    .profile-stat-label {
+        @apply text-sm text-gray-600;
+    }
+    
+    .post-grid-item {
+        @apply relative overflow-hidden rounded-xl shadow-sm transition-all duration-300 hover:shadow-md;
+    }
+    
+    .post-grid-image {
+        @apply w-full h-full object-cover transition-transform duration-300;
+    }
+    
+    .post-grid-overlay {
+        @apply absolute inset-0 bg-black opacity-0 transition-opacity duration-300;
+    }
+}
+
+@layer utilities {
+    .aspect-square {
+        aspect-ratio: 1 / 1;
     }
 }
 
 body {
     font-family: 'Poppins', sans-serif;
 }
+
+

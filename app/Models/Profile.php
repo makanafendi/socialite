@@ -10,7 +10,7 @@ class Profile extends Model
 
     public function profileImage()
     {
-        $imagePath = ($this->image) ? $this->image : 'profile\xeImcPBiroz8vpZXHvRLJEDT9ZCFxRanX8Hfa4Ao.png';
+        $imagePath = ($this->image) ? $this->image : 'profile/default-avatar.png';
         return '/storage/' . $imagePath;
     }
 
@@ -19,3 +19,4 @@ class Profile extends Model
         return $this->belongsTo(User::class);
     }
 }
+

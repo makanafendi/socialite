@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use App\Models\User;
 
 class FollowController extends Controller
@@ -12,9 +13,12 @@ class FollowController extends Controller
     {
         $user = Auth::user();
     
-        // Prevent self-follow
         if ($user->id !== $id) {
             $user->following()->attach($id);
+            
+            // Clear cache for both users
+            $this->clearUserCache($user->id);
+            $this->clearUserCache($id);
         }
     
         return redirect()->back();
@@ -24,8 +28,18 @@ class FollowController extends Controller
     {
         $user = Auth::user();
         $user->following()->detach($id);
+        
+        // Clear cache for both users
+        $this->clearUserCache($user->id);
+        $this->clearUserCache($id);
     
         return redirect()->back();
+    }
+
+    private function clearUserCache($userId)
+    {
+        Cache::forget('count.followers.' . $userId);
+        Cache::forget('count.following.' . $userId);
     }
 
     public function followingPage(User $user)
@@ -39,3 +53,4 @@ class FollowController extends Controller
     return view('profiles.following', compact('user', 'following', 'notFollowing'));
 }
 }
+

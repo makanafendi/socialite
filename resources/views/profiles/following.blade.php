@@ -1,53 +1,105 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container w-[500px] mx-auto">
-    <h1 class="text-2xl font-bold mb-4">Following</h1>
-
-
-    <div class="bg-white p-4 shadow-sm rounded-md mb-6">
-        <h2 class="text-lg font-semibold mb-3">People You Follow</h2>
-        <ul>
-            @forelse($following as $user)
-            <li class="flex items-center justify-between p-2">
-                <div class="flex items-center gap-3">
-                    <img src="{{ $user->profile->profileImage() }}" alt="profile image" class="w-[35px] h-[35px] rounded-full">
-                    <a href="/profile/{{ $user->id }}" class="font-medium">{{ $user->username }}</a>
-                </div>
-                @if(Auth::user()->id === $user->id && Auth::user()->id !== $user->id)
-                <form action="{{ route('unfollow', $user->id) }}" method="POST">
-                    @csrf                   
-                    <button type="submit" class="text-red-500 px-3 py-1 text-xs rounded-md">Unfollow</button>
-                </form>
-                @endif
-            </li>
-            @empty
-            <p class="text-gray-500">You're not following anyone yet.</p>
-            @endforelse
-        </ul>
+<div class="container w-[600px] mx-auto py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Following</h1>
+        <p class="text-gray-500 mt-1">Manage your connections</p>
     </div>
 
-
-    <div class="bg-white p-4 shadow-sm rounded-md">
-        <h2 class="text-lg font-semibold mb-3">People You Might Know</h2>
-        <ul>
-            @forelse($notFollowing as $user)
-            <li class="flex justify-between items-center p-2">
-                <div class="flex items-center gap-3">
-                    <img src="{{ $user->profile->profileImage() }}" alt="profile image" class="w-[35px] h-[35px] rounded-full">
-                    <a href="/profile/{{ $user->id }}" class="font-medium">{{ $user->username }}</a>
+    <!-- People You Follow Section -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+        <div class="border-b border-gray-100 p-4">
+            <h2 class="text-xl font-semibold text-gray-800">People You Follow</h2>
+            <p class="text-sm text-gray-500 mt-1">Users you're currently following</p>
+        </div>
+        
+        <div class="divide-y divide-gray-100">
+            @forelse($following as $user)
+            <div class="p-4 hover:bg-gray-50 transition-colors">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <img src="{{ $user->profile->profileImage() }}" 
+                             alt="{{ $user->username }}'s profile" 
+                             class="w-12 h-12 rounded-full object-cover border-2 border-gray-100">
+                        <div>
+                            <a href="/profile/{{ $user->id }}" 
+                               class="font-semibold text-gray-800 hover:text-blue-500 transition-colors">
+                                {{ $user->username }}
+                            </a>
+                            <p class="text-sm text-gray-500">Following</p>
+                        </div>
+                    </div>
+                    @if(Auth::user()->id !== $user->id)
+                    <form action="{{ route('unfollow', $user->id) }}" method="POST">
+                        @csrf                   
+                        <button type="submit" 
+                                class="px-4 py-2 text-sm font-medium text-red-500 hover:text-white border border-red-500 hover:bg-red-500 rounded-full transition-colors duration-300">
+                            Unfollow
+                        </button>
+                    </form>
+                    @endif
                 </div>
-                @if(Auth::user()->id !== $user->id)
-                <form action="{{ route('follow', $user->id) }}" method="POST">
-                    @csrf
-                    <button type="submit" class="text-blue-500 px-3 py-1 text-xs rounded-md">Follow</button>
-                </form>
-                @endif
-            </li>
+            </div>
             @empty
-            <p class="text-gray-500">No users to follow right now.</p>
+            <div class="p-8 text-center">
+                <div class="text-gray-400 mb-2">
+                    <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <p class="text-gray-500">You're not following anyone yet.</p>
+                </div>
+                <a href="/explore" class="text-blue-500 hover:text-blue-600 font-medium">Discover people to follow →</a>
+            </div>
             @endforelse
-        </ul>
+        </div>
+    </div>
+
+    <!-- Suggested Users Section -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="border-b border-gray-100 p-4">
+            <h2 class="text-xl font-semibold text-gray-800">Suggested for You</h2>
+            <p class="text-sm text-gray-500 mt-1">People you might want to follow</p>
+        </div>
+
+        <div class="divide-y divide-gray-100">
+            @forelse($notFollowing as $user)
+            <div class="p-4 hover:bg-gray-50 transition-colors">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <img src="{{ $user->profile->profileImage() }}" 
+                             alt="{{ $user->username }}'s profile" 
+                             class="w-12 h-12 rounded-full object-cover border-2 border-gray-100">
+                        <div>
+                            <a href="/profile/{{ $user->id }}" 
+                               class="font-semibold text-gray-800 hover:text-blue-500 transition-colors">
+                                {{ $user->username }}
+                            </a>
+                            <p class="text-sm text-gray-500">Suggested for you</p>
+                        </div>
+                    </div>
+                    @if(Auth::user()->id !== $user->id)
+                    <form action="{{ route('follow', $user->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" 
+                                class="px-4 py-2 text-sm font-medium text-blue-500 hover:text-white border border-blue-500 hover:bg-blue-500 rounded-full transition-colors duration-300">
+                            Follow
+                        </button>
+                    </form>
+                    @endif
+                </div>
+            </div>
+            @empty
+            <div class="p-8 text-center">
+                <div class="text-gray-400">
+                    <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <p class="text-gray-500">No suggestions available at the moment.</p>
+                </div>
+            </div>
+            @endforelse
+        </div>
     </div>
 </div>
 @endsection

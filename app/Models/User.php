@@ -52,9 +52,7 @@ class User extends Authenticatable
         parent::booted();
 
         static::created(function ($user) {
-            $user->profile()->create([
-                'title' => $user->username,
-            ]);
+            $user->profile()->create([]);
         });
     }
 
@@ -69,6 +67,8 @@ class User extends Authenticatable
         return $this->hasOne(Profile::class);
     }
 
+    protected $with = ['profile']; // This ensures profile is always loaded with user
+
     public function followers()
     {
         return $this->belongsToMany(User::class, 'follows', 'followed_id', 'user_id');
@@ -79,3 +79,5 @@ class User extends Authenticatable
         return $this->belongsToMany(User::class, 'follows', 'user_id', 'followed_id');
     }
 }
+
+

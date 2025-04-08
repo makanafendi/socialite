@@ -14,15 +14,15 @@ class ProfilesController extends Controller
 {
     public function index(\App\Models\User $user)
     {
-        $postCount = Cache::remember('count.posts.' . $user->id, now()->addSecond(30), function () use ($user) {
+        $postCount = Cache::remember('count.posts.' . $user->id, now()->addSeconds(5), function () use ($user) {
             return $user->posts->count();
         });
 
-        $followerCount = Cache::remember('count.followers.' . $user->id, now()->addSecond(30), function () use ($user) {
+        $followerCount = Cache::remember('count.followers.' . $user->id, now()->addSeconds(5), function () use ($user) {
             return $user->followers->count();
         });
 
-        $followingCount = Cache::remember('count.following.' . $user->id, now()->addSecond(30), function () use ($user) {
+        $followingCount = Cache::remember('count.following.' . $user->id, now()->addSeconds(5), function () use ($user) {
             return $user->following->count();
         });
 
@@ -36,31 +36,47 @@ class ProfilesController extends Controller
         return view('profiles.edit', compact('user'));
     }
 
-    public function update(User $user)
+    public function updatePicture(User $user)
     {
+        $this->authorize('update', $user->profile);
+
         $data = request()->validate([
-            'title' => 'required',
-            'description' => 'required',
-            'url' => 'url',
-            'image' => '',
+            'image' => 'required|image',
         ]);
 
-        if (request('image')) {
-            $imagePath = request('image')->store('profile', 'public');
+        $imagePath = request('image')->store('profile', 'public');
 
-            $manager = new ImageManager(new Driver());
-            $image = $manager->read(public_path("storage/{$imagePath}"));
-            $image->scale(width: 1000, height: 1000);
-            $image->save();
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read(public_path("storage/{$imagePath}"));
+        $image->scale(width: 1000, height: 1000);
+        $image->save();
 
-            $imageArray = ['image' => $imagePath];
+        $user->profile->update([
+            'image' => $imagePath
+        ]);
+
+        return redirect()->back()->with('success', 'Profile picture updated successfully');
+    }
+
+    public function updateBio(User $user)
+    {
+        $this->authorize('update', $user->profile);
+
+        $data = request()->validate([
+            'description' => 'required|max:100',
+        ]);
+
+        $user->profile->update($data);
+
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true]);
         }
 
-        auth()->user()->profile->update(array_merge(
-            $data,
-            $imageArray ?? []
-        )); 
-
-        return redirect('/profile/' . $user->id);
+        return redirect()->back()->with('success', 'Bio updated successfully');
     }
 }
+
+
+
+
+
