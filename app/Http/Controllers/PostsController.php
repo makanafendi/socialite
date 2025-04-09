@@ -16,7 +16,7 @@ class PostsController extends Controller
     {
         $this->middleware('auth');
     }
-    
+
 
     public function create()
     {
@@ -55,12 +55,12 @@ class PostsController extends Controller
             if (request()->wantsJson()) {
                 return response()->json(['message' => 'Failed to create post'], 422);
             }
-            
+
             return back()->withErrors(['error' => 'Failed to create post'])->withInput();
         }
     }
 
-    public function show(\App\Models\Post$post)
+    public function show(\App\Models\Post $post)
     {
         return view('posts.show', compact('post'));
     }
@@ -68,15 +68,15 @@ class PostsController extends Controller
     public function destroy(Post $post)
     {
         $this->authorize('delete', $post);
-        
+
         // Delete the image from storage
         Storage::disk('public')->delete($post->image);
-        
+
         // Clear post count cache
         Cache::forget('count.posts.' . $post->user_id);
-        
+
         $post->delete();
-        
+
         return redirect('/profile/' . auth()->user()->id);
     }
 
@@ -84,7 +84,7 @@ class PostsController extends Controller
     {
         try {
             $user = auth()->user();
-            
+
             if ($post->likedBy($user)) {
                 $post->likes()->where('user_id', $user->id)->delete();
                 $liked = false;
@@ -94,33 +94,25 @@ class PostsController extends Controller
                 ]);
                 $liked = true;
             }
-            
+
             $count = $post->likes()->count();
-            
+
             if (request()->wantsJson()) {
                 return response()->json([
                     'liked' => $liked,
                     'count' => $count
                 ]);
             }
-            
+
             return redirect()->back();
-            
         } catch (\Exception $e) {
             if (request()->wantsJson()) {
                 return response()->json([
                     'error' => 'Failed to process like'
                 ], 500);
             }
-            
+
             return redirect()->back()->with('error', 'Failed to process like');
         }
     }
 }
-
-
-
-
-
-
-

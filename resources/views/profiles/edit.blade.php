@@ -1,10 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container max-w-[768px] mx-auto px-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">Edit Profile</h1>
-        <a href="/profile/{{ $user->id }}" class="text-gray-500 hover:text-gray-700">
+<div class="container max-w-[768px] mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Edit Profile</h1>
+            <p class="text-gray-500 mt-1">Customize your profile information</p>
+        </div>
+        <a href="/profile/{{ $user->id }}" 
+           class="text-gray-500 hover:text-gray-700 transition-colors p-2 hover:bg-gray-100 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -12,16 +17,39 @@
     </div>
     
     <div x-data="profileEdit()" class="space-y-6">
+        <!-- Notification -->
+        <div 
+            x-show="notification.show" 
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform -translate-y-2"
+            x-transition:enter-end="opacity-100 transform translate-y-0"
+            x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 transform translate-y-0"
+            x-transition:leave-end="opacity-0 transform -translate-y-2"
+            :class="notification.type === 'error' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-green-100 text-green-700 border-green-200'"
+            class="p-4 rounded-xl border mb-4 shadow-sm flex items-center"
+        >
+            <div :class="notification.type === 'error' ? 'text-red-500' : 'text-green-500'" class="mr-3">
+                <svg x-show="notification.type === 'success'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <svg x-show="notification.type === 'error'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </div>
+            <p x-text="notification.message" class="font-medium"></p>
+        </div>
+
         <!-- Profile Picture Form -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold mb-4 text-center">Profile Picture</h2>
+        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300">
+            <h2 class="text-xl font-semibold mb-2 text-gray-800">Profile Picture</h2>
+            <p class="text-gray-500 text-sm mb-6">Recommended size: 400x400px</p>
             
             <div class="flex flex-col items-center">
-                <input type="file" name="image" id="image" class="hidden" accept="image/*" @change="handleImageChange">
                 <div 
                     @click="$refs.fileInput.click()" 
-                    class="cursor-pointer w-64 h-64 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors mb-6"
-                    :class="{'border-none': imageUrl}"
+                    class="cursor-pointer w-48 h-48 rounded-full transition-all duration-300 relative group"
+                    :class="{'border-2 border-dashed border-gray-300 hover:border-primary': !imageUrl}"
                 >
                     <!-- Preview Image -->
                     <template x-if="imageUrl">
@@ -30,61 +58,123 @@
 
                     <!-- Upload Icon and Text -->
                     <template x-if="!imageUrl">
-                        <div class="text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        <div class="w-full h-full flex flex-col items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <span class="mt-2 block text-sm text-gray-500">Upload Photo</span>
+                            <p class="text-sm text-gray-500">Click to upload photo</p>
                         </div>
                     </template>
+
+                    <!-- Hover Overlay -->
+                    <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full flex items-center justify-center">
+                        <p class="text-white font-medium">Change Photo</p>
+                    </div>
 
                     <input type="file" class="hidden" x-ref="fileInput" @change="handleImageChange" accept="image/*" name="image">
                 </div>
 
                 @error('image')
-                <p class="text-red-500 text-sm italic mb-4">{{ $message }}</p>
+                <p class="text-red-500 text-sm mt-4">{{ $message }}</p>
                 @enderror
             </div>
         </div>
 
+        <!-- Background Picture Form -->
+        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300">
+            <h2 class="text-xl font-semibold mb-2 text-gray-800">Profile Background</h2>
+            <p class="text-gray-500 text-sm mb-6">Recommended size: 1500x500px</p>
+            
+            <div class="flex flex-col items-center">
+                <div 
+                    @click="$refs.backgroundInput.click()" 
+                    class="cursor-pointer w-full h-48 rounded-xl transition-all duration-300 relative group"
+                    :class="{'border-2 border-dashed border-gray-300 hover:border-primary': !backgroundUrl}"
+                >
+                    <!-- Preview Image -->
+                    <template x-if="backgroundUrl">
+                        <img :src="backgroundUrl" class="w-full h-full rounded-xl object-cover">
+                    </template>
+
+                    <!-- Upload Icon and Text -->
+                    <template x-if="!backgroundUrl">
+                        <div class="w-full h-full flex flex-col items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p class="text-sm text-gray-500">Click to upload background</p>
+                        </div>
+                    </template>
+
+                    <!-- Hover Overlay -->
+                    <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl flex items-center justify-center">
+                        <p class="text-white font-medium">Change Background</p>
+                    </div>
+
+                    <input type="file" class="hidden" x-ref="backgroundInput" @change="handleBackgroundChange" accept="image/*" name="background">
+                </div>
+            </div>
+        </div>
+
         <!-- Bio Form -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold mb-4">Bio</h2>
+        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300">
+            <h2 class="text-xl font-semibold mb-2 text-gray-800">Bio</h2>
+            <p class="text-gray-500 text-sm mb-6">Tell others about yourself</p>
             
             <div class="relative">
                 <textarea 
                     id="description"
-                    placeholder="Write a bio"
+                    placeholder="Write something about yourself..."
                     maxlength="100"
-                    class="bg-gray-100 rounded-lg w-full py-3 px-4 leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none h-32 pr-16"
+                    class="bg-gray-50 rounded-xl w-full py-4 px-5 leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white resize-none h-32 pr-16 transition-all duration-300"
                     name="description"
                     x-model="bio"
                     @input="handleBioChange"
                 >{{ old('description') ?? $user->profile->description }}</textarea>
                 
-                <div class="absolute bottom-3 right-3 text-sm text-gray-400 bg-gray-100 px-2 rounded">
-                    <span id="description-counter" x-text="bioLength + '/100'"></span>
+                <div class="absolute bottom-4 right-4 text-sm font-medium" 
+                     :class="bioLength > 80 ? 'text-red-500' : 'text-gray-400'">
+                    <span x-text="bioLength + '/100'"></span>
                 </div>
             </div>
 
             @error('description')
-            <p class="text-red-500 text-sm italic mt-2">{{ $message }}</p>
+            <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
             @enderror
         </div>
 
         <!-- Main Action Buttons -->
-        <div class="flex justify-end gap-4 mt-6" x-show="hasChanges">
+        <div class="flex justify-end gap-4 mt-8" x-show="hasChanges">
             <a 
                 href="/profile/{{ $user->id }}" 
-                class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-300 font-medium inline-flex items-center"
+                :class="{'opacity-50 cursor-not-allowed': isSubmitting}"
+                :disabled="isSubmitting"
             >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
                 Cancel
             </a>
             <button 
                 @click="saveProfile"
-                class="px-6 py-2 bg-primary text-white rounded-md hover:opacity-90 transition-opacity"
+                class="px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all duration-300 font-medium inline-flex items-center shadow-sm hover:shadow-md"
+                :disabled="isSubmitting"
+                :class="{'opacity-50 cursor-not-allowed': isSubmitting}"
             >
-                Save Profile
+                <span x-show="!isSubmitting" class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Save Changes
+                </span>
+                <span x-show="isSubmitting" class="flex items-center">
+                    <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                </span>
             </button>
         </div>
     </div>
@@ -95,17 +185,75 @@ function profileEdit() {
     return {
         imageUrl: '{{ $user->profile->profileImage() }}',
         originalImageUrl: '{{ $user->profile->profileImage() }}',
+        backgroundUrl: '{{ $user->profile->backgroundImage() }}',
+        originalBackgroundUrl: '{{ $user->profile->backgroundImage() }}',
         bio: '{{ old('description') ?? $user->profile->description }}',
         originalBio: '{{ $user->profile->description }}',
         bioLength: {{ strlen(old('description') ?? $user->profile->description) }},
         hasChanges: false,
         imageFile: null,
+        backgroundFile: null,
+        isSubmitting: false,
+        notification: {
+            show: false,
+            message: '',
+            type: 'success'
+        },
         
+        init() {
+            // Cleanup object URLs when component is destroyed
+            window.addEventListener('beforeunload', () => {
+                if (this.imageUrl && this.imageUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(this.imageUrl);
+                }
+                if (this.backgroundUrl && this.backgroundUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(this.backgroundUrl);
+                }
+            });
+        },
+
         handleImageChange(event) {
             const file = event.target.files[0];
             if (file) {
+                // Check file size (e.g., 5MB limit)
+                if (file.size > 5 * 1024 * 1024) {
+                    this.showNotification('Image size should be less than 5MB', 'error');
+                    event.target.value = '';
+                    return;
+                }
+                
+                // Check file type
+                if (!file.type.match('image.*')) {
+                    this.showNotification('Please select an image file', 'error');
+                    event.target.value = '';
+                    return;
+                }
+
                 this.imageFile = file;
                 this.imageUrl = URL.createObjectURL(file);
+                this.hasChanges = true;
+            }
+        },
+
+        handleBackgroundChange(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Check file size (e.g., 5MB limit)
+                if (file.size > 5 * 1024 * 1024) {
+                    this.showNotification('Image size should be less than 5MB', 'error');
+                    event.target.value = '';
+                    return;
+                }
+                
+                // Check file type
+                if (!file.type.match('image.*')) {
+                    this.showNotification('Please select an image file', 'error');
+                    event.target.value = '';
+                    return;
+                }
+
+                this.backgroundFile = file;
+                this.backgroundUrl = URL.createObjectURL(file);
                 this.hasChanges = true;
             }
         },
@@ -114,43 +262,89 @@ function profileEdit() {
             this.bioLength = event.target.value.length;
             this.hasChanges = this.bio !== this.originalBio || this.imageUrl !== this.originalImageUrl;
         },
+
+        showNotification(message, type = 'success') {
+            this.notification.show = true;
+            this.notification.message = message;
+            this.notification.type = type;
+            
+            setTimeout(() => {
+                this.notification.show = false;
+            }, 3000);
+        },
         
         async saveProfile() {
-            // Create FormData for image upload
-            if (this.imageFile) {
-                const imageFormData = new FormData();
-                imageFormData.append('image', this.imageFile);
-                imageFormData.append('_method', 'PATCH');
-                
-                await fetch('/profile/{{ $user->id }}/picture', {
-                    method: 'POST',
-                    body: imageFormData,
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            if (this.isSubmitting) return;
+            this.isSubmitting = true;
+
+            try {
+                // Create FormData for image upload
+                if (this.imageFile || this.backgroundFile) {
+                    const imageFormData = new FormData();
+                    if (this.imageFile) {
+                        imageFormData.append('image', this.imageFile);
                     }
-                });
-            }
+                    if (this.backgroundFile) {
+                        imageFormData.append('background', this.backgroundFile);
+                    }
+                    imageFormData.append('_method', 'PATCH');
+                    
+                    const imageResponse = await fetch('/profile/{{ $user->id }}/picture', {
+                        method: 'POST',
+                        body: imageFormData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    });
 
-            // Update bio if changed
-            if (this.bio !== this.originalBio) {
-                await fetch('/profile/{{ $user->id }}/bio', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'X-HTTP-Method-Override': 'PATCH'
-                    },
-                    body: JSON.stringify({
-                        description: this.bio,
-                        _method: 'PATCH'
-                    })
-                });
-            }
+                    if (!imageResponse.ok) {
+                        const data = await imageResponse.json();
+                        throw new Error(data.message || 'Failed to update profile pictures');
+                    }
+                }
 
-            // Redirect to profile page
-            window.location.href = '/profile/{{ $user->id }}';
+                // Update bio if changed
+                if (this.bio !== this.originalBio) {
+                    const bioResponse = await fetch('/profile/{{ $user->id }}/bio', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            description: this.bio,
+                            _method: 'PATCH'
+                        })
+                    });
+
+                    if (!bioResponse.ok) {
+                        const data = await bioResponse.json();
+                        throw new Error(data.message || 'Failed to update bio');
+                    }
+                }
+
+                this.showNotification('Profile updated successfully!');
+                
+                setTimeout(() => {
+                    window.location.href = '/profile/{{ $user->id }}';
+                }, 1000);
+
+            } catch (error) {
+                this.showNotification(error.message || 'Error updating profile', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
         }
     }
 }
 </script>
 @endsection
+
+
+
+
+
+
+
+

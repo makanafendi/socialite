@@ -14,9 +14,16 @@ class Profile extends Model
         return '/storage/' . $imagePath;
     }
 
+    public function backgroundImage()
+    {
+        return $this->background ? '/storage/' . $this->background : null;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 }
+
+
 

@@ -12,27 +12,43 @@ class FollowController extends Controller
     public function follow($id)
     {
         $user = Auth::user();
-    
+
         if ($user->id !== $id) {
             $user->following()->attach($id);
-            
+
             // Clear cache for both users
             $this->clearUserCache($user->id);
             $this->clearUserCache($id);
         }
-    
+
+        // Check if request is AJAX
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'following' => true
+            ]);
+        }
+
         return redirect()->back();
     }
-    
+
     public function unfollow($id)
     {
         $user = Auth::user();
         $user->following()->detach($id);
-        
+
         // Clear cache for both users
         $this->clearUserCache($user->id);
         $this->clearUserCache($id);
-    
+
+        // Check if request is AJAX
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'following' => false
+            ]);
+        }
+
         return redirect()->back();
     }
 
@@ -43,14 +59,13 @@ class FollowController extends Controller
     }
 
     public function followingPage(User $user)
-{
-    $following = $user->following;
+    {
+        $following = $user->following;
 
-    $notFollowing = User::whereNotIn('id', $user->following->pluck('id'))
-                        ->where('id', '!=', $user->id)
-                        ->get();
+        $notFollowing = User::whereNotIn('id', $user->following->pluck('id'))
+            ->where('id', '!=', $user->id)
+            ->get();
 
-    return view('profiles.following', compact('user', 'following', 'notFollowing'));
+        return view('profiles.following', compact('user', 'following', 'notFollowing'));
+    }
 }
-}
-

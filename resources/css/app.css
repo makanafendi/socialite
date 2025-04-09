@@ -73,7 +73,12 @@
         color: #42A3FF;
     }
     
-    /* Add these new utility classes */
+    /* Add gradient backgrounds */
+    .bg-gradient-profile {
+        @apply bg-gradient-to-r from-blue-400 to-purple-500;
+    }
+    
+    /* Your existing utility classes */
     .hover-transform {
         @apply transition-transform duration-300 hover:scale-105;
     }
@@ -118,5 +123,6 @@
 body {
     font-family: 'Poppins', sans-serif;
 }
+
 
 

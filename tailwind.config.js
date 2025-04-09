@@ -14,7 +14,14 @@ export default {
             fontFamily: {
                 sans: ['Poppins', 'sans-serif'],
             },
+            colors: {
+                'primary': '#42A3FF',
+            },
+            backdropBlur: {
+                'sm': '4px',
+            },
         },
     },
     plugins: [],
 };
+
