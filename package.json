@@ -4,7 +4,8 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "wow": "concurrently \"vite\" \"php artisan serve\""
+        "wow": "concurrently \"vite\" \"php artisan serve\"",
+        "dev:win": "concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"vite\" --names=server,queue,vite"
     },
     "devDependencies": {
         "@popperjs/core": "^2.11.6",

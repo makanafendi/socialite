@@ -12,9 +12,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // For SQLite, we'll use a different approach to create indexes
-        // by checking if they exist first with a raw query
+        $connection = DB::getDriverName();
 
+        if ($connection === 'sqlite') {
+            // For SQLite, we'll use a different approach to create indexes
+            // by checking if they exist first with a raw query
+            $this->createSqliteIndexes();
+        } else {
+            // For MySQL, PostgreSQL, etc. use Schema builder
+            $this->createSchemaIndexes();
+        }
+    }
+
+    /**
+     * Create indexes using SQLite-specific approach
+     */
+    private function createSqliteIndexes(): void
+    {
         // Helper function to create index if it doesn't exist
         $createIndexIfNotExists = function($table, $columns, $indexName = null) {
             if (!$indexName) {
@@ -61,6 +75,55 @@ return new class extends Migration
         if (Schema::hasTable('comment_likes')) {
             $createIndexIfNotExists('comment_likes', ['comment_id', 'user_id'], 'comment_likes_comment_id_user_id_index');
             $createIndexIfNotExists('comment_likes', 'comment_id');
+        }
+    }
+
+    /**
+     * Create indexes using Schema builder for other database systems
+     */
+    private function createSchemaIndexes(): void
+    {
+        // Create indexes for user table
+        Schema::table('users', function (Blueprint $table) {
+            $table->index('username');
+            $table->index('name');
+            $table->index('created_at');
+        });
+        
+        // Create indexes for posts table
+        Schema::table('posts', function (Blueprint $table) {
+            $table->index(['user_id', 'created_at']);
+            $table->index('created_at');
+        });
+        
+        // Create indexes for comments table
+        Schema::table('comments', function (Blueprint $table) {
+            $table->index(['post_id', 'created_at']);
+            $table->index(['user_id', 'created_at']);
+        });
+        
+        // Create indexes for follows table (if it exists)
+        if (Schema::hasTable('follows')) {
+            Schema::table('follows', function (Blueprint $table) {
+                $table->index(['user_id', 'created_at']);
+                $table->index(['followed_id', 'created_at']);
+            });
+        }
+        
+        // Create indexes for likes table (if it exists)
+        if (Schema::hasTable('likes')) {
+            Schema::table('likes', function (Blueprint $table) {
+                $table->index(['post_id', 'user_id']);
+                $table->index('post_id');
+            });
+        }
+        
+        // Create indexes for comment_likes table (if it exists)
+        if (Schema::hasTable('comment_likes')) {
+            Schema::table('comment_likes', function (Blueprint $table) {
+                $table->index(['comment_id', 'user_id']);
+                $table->index('comment_id');
+            });
         }
     }
 
