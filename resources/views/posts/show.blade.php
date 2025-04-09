@@ -201,8 +201,8 @@
                                 <div class="flex items-center gap-2 mt-1">
                                     <button 
                                         @click="toggleLikeComment(comment)" 
-                                        class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
-                                        :class="{'text-red-500 hover:text-red-700': comment.liked}">
+                                        class="text-xs hover:text-gray-700 flex items-center gap-1"
+                                        :class="{'text-red-500 hover:text-red-700': comment.liked, 'text-gray-500': !comment.liked}">
                                         <svg 
                                             xmlns="http://www.w3.org/2000/svg" 
                                             class="h-3 w-3" 
@@ -437,23 +437,27 @@
                 fetch(`/comments/${comment.id}/like`, {
                     method: 'POST',
                     headers: {
+                        'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json'
-                    }
+                    },
+                    credentials: 'same-origin' // Add this to ensure cookies are sent
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         // Update the comment in the UI
-                        const commentIndex = this.comments.findIndex(c => c.id === comment.id);
-                        if (commentIndex !== -1) {
-                            this.comments[commentIndex].liked = data.liked;
-                            this.comments[commentIndex].likes_count = data.count;
-                        }
+                        comment.liked = data.liked;
+                        comment.likes_count = data.count;
                     }
                 })
                 .catch(error => {
-                    console.error('Error liking comment:', error);
+                    console.error('Error toggling comment like:', error);
                 });
             },
             
@@ -481,3 +485,5 @@
     });
 </script>
 @endsection
+
+
